@@ -3,6 +3,7 @@ from lxml import etree
 import os
 
 app = Flask(__name__)
+
 try:
     with open('/tmp/flag.txt', 'w') as f:
         f.write('CTF{xxe_p4rs3r_m4g1c}')
@@ -11,39 +12,132 @@ except Exception as e:
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Auror Recruitment Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auror XML Parser</title>
     <style>
-        body { background: #0d1117; color: #c9d1d9; font-family: 'Courier New', monospace; padding: 40px; }
-        .container { border: 1px solid #30363d; padding: 20px; background: #161b22; max-width: 600px; }
-        h1 { color: #d4af37; }
-        textarea { width: 100%; background: #050505; color: #58a6ff; border: 1px solid #30363d; padding: 10px; }
-        input[type="submit"] { margin-top: 10px; background: #d4af37; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
-        .response { margin-top: 20px; color: #3fb950; white-space: pre-wrap; word-wrap: break-word; }
-        .error { margin-top: 20px; color: #f85149; }
+        * { box-sizing: border-box; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #faf0e6;
+            font-family: 'Times New Roman', Times, serif;
+            color: #333333;
+        }
+        .parser-card {
+            background-color: #fff8dc;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #e0d0b0;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 95%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.8em;
+            margin-bottom: 20px;
+            color: #b8860b;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .code-block {
+            background-color: #2c2c2c;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        textarea.xml-input {
+            width: 100%;
+            height: 250px;
+            padding: 20px;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+        }
+        button.submit-btn {
+            background-color: #ffd700;
+            color: #333333;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            width: 100%;
+        }
+        button.submit-btn:hover {
+            background-color: #e6c200;
+        }
+        button.submit-btn:active {
+            transform: scale(0.98);
+        }
+        .response-box {
+            margin-top: 25px;
+            background-color: #2c2c2c;
+            color: #4CAF50;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #4CAF50;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .error-box {
+            margin-top: 25px;
+            background-color: #2c2c2c;
+            color: #f44336;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #f44336;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="parser-card">
         <h1>Auror XML Resume Parser</h1>
         <p>Submit your details using our standardized XML format.</p>
         
         <form method="POST" action="/">
-            <textarea name="resume" rows="10">
-<resume>
-    <name>Harry Potter</name>
-    <skills>Defense Against the Dark Arts</skills>
-</resume>
-            </textarea><br>
-            <input type="submit" value="Submit Application">
+            <div class="code-block">
+                <textarea name="resume" class="xml-input" spellcheck="false">&lt;resume&gt;
+  &lt;name&gt;Harry Potter&lt;/name&gt;
+  &lt;skills&gt;Defense Against the Dark Arts&lt;/skills&gt;
+&lt;/resume&gt;</textarea>
+            </div>
+            <button type="submit" class="submit-btn">Submit Application</button>
         </form>
 
         {% if message %}
-            <div class="response"><strong>System Response:</strong><br>{{ message }}</div>
+            <div class="response-box"><strong>System Response:</strong><br><br>{{ message }}</div>
         {% endif %}
+        
         {% if error %}
-            <div class="error"><strong>Parser Error:</strong><br>{{ error }}</div>
+            <div class="error-box"><strong>Parser Error:</strong><br><br>{{ error }}</div>
         {% endif %}
     </div>
 </body>
@@ -61,7 +155,7 @@ def index():
             applicant_name = root.findtext('name')
             
             if applicant_name:
-                msg = f"Application received for: \n{applicant_name}\n\nWe will contact you via owl soon."
+                msg = f"Application received for:\n{applicant_name}\n\nWe will contact you via owl soon."
                 return render_template_string(HTML_TEMPLATE, message=msg)
             else:
                 return render_template_string(HTML_TEMPLATE, error="Invalid format. <name> tag missing.")
