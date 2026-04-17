@@ -3,9 +3,11 @@ from lxml import etree
 import os
 
 app = Flask(__name__)
-
-with open('flag.txt', 'w') as f:
-    f.write('CTF{xxe_p4rs3r_m4g1c}')
+try:
+    with open('/tmp/flag.txt', 'w') as f:
+        f.write('CTF{xxe_p4rs3r_m4g1c}')
+except Exception as e:
+    print(f"Could not write flag: {e}")
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
